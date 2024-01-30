@@ -1,5 +1,5 @@
 #!/bin/bash
-# MasterScript: Phase 1 of mosaic variant finding pipeline, which includes
+# MasterScript: Variant calling step 
 # 1. Coverage Analysis of every bam file
 # 2. GATK-HC: germline variant calling in each family
 # 3. Mutect2 and FilterMutect2: Parents,Probands and Siblings (if available)
@@ -11,7 +11,7 @@
 
 usage()
 {
-echo "#MasterScript: Phase 1 of mosaic variant finding pipeline, which includes
+echo "#MasterScript: Variant calling steps, which includes
 # 1. Coverage Analysis of every bam file
 # 2. GATK HaplotypeCaller: germline variant calling in each family
 # 3. Mutect2: Parents and Probands and Siblings (if available)
@@ -108,17 +108,9 @@ for SAMPLEID in "${SAMPLEID[@]}"; do
     # Submit MHjob for Proband either in triomode or singlemode
 	# so, need to Check if both MotherID and FatherID are present
     if [[ -n "$MotherID" && -n "$FatherID" ]]; then
-        MH_P="sbatch $SCRIPTDIR/scripts/MosaicHunter_WES_Trio.sh -s $ProbandID -b $BAMDIR -d $OUTDIR -g $Gender -f $FatherID -m $MotherID -c $CONFIG_FILE"
- 	    MH_P_JobID=$($MH_P | awk '{print $NF}')
-	    sbatch --export=ALL --dependency=afterok:${MH_P_JobID} $SCRIPTDIR/scripts/CombineCalls.sh -s $ProbandID -v MH -f $OUTDIR/$ProbandID.final.passed.tsv -o $OUTDIR
-	    if [ "$MH_P_JobID" ]; then
-	        Count_MH=$(wc -l $OUTDIR/$ProbandID.final.passed.tsv)
-	        echo "$ProbandID\tTriomode\t$Count_MH" | tr " " "\t" >> $OUTDIR/Counts.txt
-	    fi
+        sbatch $SCRIPTDIR/scripts/MosaicHunter_WES_Trio.sh -s $ProbandID -b $BAMDIR -d $OUTDIR -g $Gender -f $FatherID -m $MotherID -c $CONFIG_FILE
     else
-        MH_P="sbatch $SCRIPTDIR/scripts/MosaicHunter_WES_Singlemode.sh -s $ProbandID -b $BAMDIR -d $OUTDIR -g $Gender -c $CONFIG_FILE"
- 	    MH_P_JobID=$($MH_P | awk '{print $NF}')
-	    sbatch --export=ALL --dependency=afterok:${MH_P_JobID} $SCRIPTDIR/scripts/CombineCalls.sh -s $ProbandID -v MH -f $OUTDIR/$ProbandID.final.passed.tsv -o $OUTDIR
+        sbatch $SCRIPTDIR/scripts/MosaicHunter_WES_Singlemode.sh -s $ProbandID -b $BAMDIR -d $OUTDIR -g $Gender -c $CONFIG_FILE
     fi
 		
 	# Submit MHjob for Parents

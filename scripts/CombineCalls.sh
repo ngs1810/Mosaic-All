@@ -19,41 +19,34 @@ usage()
 echo "
 #
 #README
-#This script is designed for Mosaic-All wrapper script,
-#to COMBINE all variant calls (of all samples executed by batch) in one meta-file
-#sbatch $0 -s ID -v MH -f FILE -o /path/to/output
-#-s <string>          REQUIRED: The ID of the Proband
-#-v <string>          REQUIRED: The variant caller to use, typically MH
-#-f /path/to/file     REQUIRED: The *.final.passed.tsv output from the variant caller   					
-#-o /path/to/output/  REQUIRED: Path to the output directory
-#
+#This script is designed to be used after Mosaic-All wrapper script,
+#Post-processing MF variants
+#to COMBINE all variant calls (of all samples executed by batch) in one meta-file based on each mosaic variant calling
+#for M3 pipeline
+#sbatch $0 -s SampleID -d /path/to/M3_pipeline/output
+#-s REQUIRED sampleID 
+#-d REQUIRED Directory containing the lists of variants called for each sample before merging
 "
 }
 
 
 ## Set Variables ##
 while [ "$1" != "" ]; do
-        case $1 in
-                -s )                    shift
-                                        ProbandID=$1
-                                        ;;
-                -v )                    shift
-                                        VC=$1
-                                        ;;
-                -f )                    shift
-                                        FILE=$1
-                                        ;;
-                -o )                    shift
-                                        OUTPUT=$1
-                                        ;;
-                * )                     usage
-                                        exit 1
-        esac
-        shift
+    case $1 in
+        -s ) shift
+             SampleID=$1
+             ;;
+        -d ) shift
+             DIR=$1
+             ;;
+        * ) usage
+            exit 1
+    esac
+    shift
 done
 
 ## Check for all required arguments
-for ARG in $ProbandID $VC $FILE $OUTPUT; do
+for ARG in $SampleID $DIR; do
     if [ -z "${ARG}" ]; then
         usage
         echo "## ERROR: Please check that you have supplied all required argunments for this script"
@@ -61,4 +54,27 @@ for ARG in $ProbandID $VC $FILE $OUTPUT; do
     fi
 done
 
-awk -v ID="$ProbandID" '$0 !~ /^##/ {print ID "\t" "$VC" "\t" $0}' $FILE >> $OUTPUT/$VC.calls.txt
+##Define Suffix of each output files
+MUT="mutect2.singlemode.PASS.aaf.vcf"
+MH="final.passed.tsv" 
+MF="Refined.dpaf.MosaicOnly.txt"
+
+# Check if input files exist
+for FILE in "$DIR/$SampleID.$MUT" "$DIR/$SampleID.$MH" "$DIR/$SampleID.$MF"; do
+    if [ ! -f "$FILE" ]; then
+        echo "Error: File $FILE does not exist."
+        exit 1
+    fi
+done
+
+#Mutect2
+awk -v ID="$SampleID" '$0 !~ /^##/ {print ID "\t" "Mutect2" "\t" $0}' $DIR/$SampleID.$MUT >> $DIR/Mutect2.variants.txt
+
+#MosaicHunter
+awk -v ID="$SampleID" '$0 !~ /^##/ {print ID "\t" "MH" "\t" $0}' $DIR/$SampleID.$MH >> $DIR/MH.variants.txt
+
+#MosaicForecast
+awk '$35=="mosaic" {OFS="\t"; print}' $DIR/$SampleID.genotype.predictions.phased.singlemode.bed > $DIR/$SampleID.RefinedMosaicOnly.txt
+awk '$25>=20  {OFS="\t"; print}' $DIR/$SampleID.RefinedMosaicOnly.txt > $DIR/$SampleID.Refined.dp20.MosaicOnly.txt
+awk '$24>=0.03  {OFS="\t"; print}' $DIR/$SampleID.Refined.dp20.MosaicOnly.txt > $DIR/$SampleID.Refined.dpaf.MosaicOnly.txt
+awk -v ID="$SampleID" '$0 !~ /^##/ {print ID "\t" "MF" "\t" $0}' $DIR/$SampleID.$MF >> $DIR/MF.variants.txt
