@@ -1,10 +1,8 @@
 #!/bin/bash
 # MasterScript: Variant calling step 
-# 1. Coverage Analysis of every bam file
-# 2. GATK-HC: germline variant calling in each family
-# 3. Mutect2 and FilterMutect2: Parents,Probands and Siblings (if available)
-# 4. MosaicHunter: Parents,Probands and Siblings (if available)
-# 5. MosaicForecast on Mutect2 variant callset, followed by Filter
+# 1. Mutect2 and FilterMutect2: Parents,Probands and Siblings (if available)
+# 2. MosaicHunter: Parents,Probands and Siblings (if available)
+# 3. MosaicForecast on Mutect2 variant callset, followed by Filter
 # UniAdelaide-HPC friendly
 # Date: 9th June 2023
 # 
@@ -12,11 +10,9 @@
 usage()
 {
 echo "#MasterScript: Variant calling steps, which includes
-# 1. Coverage Analysis of every bam file
-# 2. GATK HaplotypeCaller: germline variant calling in each family
-# 3. Mutect2: Parents and Probands and Siblings (if available)
-# 4. MosaicHunter: Parents and Probands and Siblings (if available)
-# 5. MosaicForecast on Mutect2 variant callset
+# 1. Mutect2: Parents and Probands and Siblings (if available)
+# 2. MosaicHunter: Parents and Probands and Siblings (if available)
+# 3. MosaicForecast on Mutect2 variant callset
 #
 #
 # Usage $0 -s /path/to/sampleID.list -o /path/to/output_folder -c /path/to/config_file | [ - h | --help ]
