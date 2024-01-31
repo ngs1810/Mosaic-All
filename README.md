@@ -22,10 +22,10 @@ GATK: https://github.com/broadinstitute/gatk/releases
 |  Panel of Normal (PON)        |     Should be prepared based on samples that are not part of the analysis.<br>As a suggestion for large cohort analysis, samples can be divided into two cohorts to create two Panel of Normals (PON_A and PON_B).<br>This PON can be prepared based on GATK option-CreateSomaticPanelOfNormals (i.e https://gatk.broadinstitute.org/hc/en-us/articles/4405451431963-CreateSomaticPanelOfNormals-BETA)          |
 
 ### Step 2: Config-files
-There are two config-files, in which directories of softwares/resources (as prepared in Step 1) should be specified.
+There is  a config-file, in which directories of softwares/resources (as prepared in Step 1) should be specified.
 
-#### 2.1 Mosaic-All.config
-#### 2.2 BWA-GATKHC.hs37d5_phoenix.cfg
+#### Mosaic-All.config
+
 
 ### Step 3: Variant calling using four tools
 
@@ -69,8 +69,20 @@ Aims:
 
 ### Step 5: Analysis for parental gonosomal mosaicism (pGoM)
 
+5.1 Command
 > sbatch $SCRIPTDIR/pGoM.sh -v $VCFDIR -s $OUTDIR/FamilyID.txt -o $OUTDIR
-- VCFDIR					(directory for family VCFs)
-- FAMILYID   			(familyID.txt:list of familyIDs in a txt file; $FAMILYID*.vcf)
-- OUTDIR					(output directory) 
+
+5.2 Requirements
+
+1. VCFDIR					
+- directory for family VCFs
+
+2. SAMPLELIST
+   
+|  Directory of Bam files  | ProbandID | Gender   | MotherID | FatherID | FamilyVCF | 
+|--------------------------|-----------|----------|----------|----------|-----------|
+|   ./path                 |   001P    |   F      |  001M    |   001F   | Trio001.vcf |
+
+3. OUTDIR					
+- output directory
 
