@@ -69,20 +69,34 @@ Aims:
 
 ### Step 5: Analysis for parental gonosomal mosaicism (pGoM)
 
-5.1 Command
-> sbatch $SCRIPTDIR/pGoM.sh -v $VCFDIR -s $OUTDIR/FamilyID.txt -o $OUTDIR
+Aims: 
+- To filter parental mosaic variant calls based on transmission to children
 
-5.2 Requirements
+5.1 Prefilter
+- Identify inherited variants that expected to be mosaic based on AAF and GT, using GATKHC outputs
 
-1. VCFDIR					
-- directory for family VCFs
+Command:
 
-2. SAMPLELIST
+`sbatch /MosaiC-ALL/postprocessing/pGoM.sh -v /path/to/directory_of_vcf -s FamilyID.txt -o /path/to/output/directory`
+
+Requirements:
+
+1. input directory (where can we find the family.vcf).
+
+2. sampleID list (one header row and then tab-delimited columns \$BAMdir,\$ProbandID,\$Gender,\$Mother,\$Father).
    
 |  Directory of Bam files  | ProbandID | Gender   | MotherID | FatherID | FamilyVCF | 
 |--------------------------|-----------|----------|----------|----------|-----------|
 |   ./path                 |   001P    |   F      |  001M    |   001F   | Trio001.vcf |
+|   ./path                 |   004P    |   F      |  004M    |   004F   | 004.family.vcf |
 
-3. OUTDIR					
-- output directory
+3. /path/to/output/directory	(A location for the output files).
 
+5.2 Postfilter
+- Mosaic variants are identified among prefiltered pGoM variants using one or more mosaic variant calling tools
+- Example script: MosaiC-ALL/postprocessing/pGoMpipeline.R
+
+Requirements:
+1. Three Output files from MosaiC-ALL/postprocessing/M3_CombineCalls.sh
+2. pGoM.sh output file
+3. Amend the working directory and output_file prefix in the R.script
